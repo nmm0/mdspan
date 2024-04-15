@@ -62,6 +62,7 @@ mdspan_add_test(test_submdspan)
 mdspan_add_test(test_submdspan_static_slice)
 mdspan_add_test(test_layout_padded_left)
 mdspan_add_test(test_layout_padded_right)
+mdspan_add_test(test_mdspan_copy_and_fill)
 endif()
 # both of those don't work yet since its using vector
 if(NOT MDSPAN_ENABLE_CUDA AND NOT MDSPAN_ENABLE_HIP)
