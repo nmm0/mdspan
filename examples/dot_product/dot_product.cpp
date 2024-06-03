@@ -56,8 +56,8 @@ T dot_product(
 ) //requires ExtsA::rank() == ExtsB::rank() && ExtsA::rank() == 2
 {
   T result = 0;
-  for(int i = 0; i < a.extent(0); ++i) {
-    for(int j = 0; j < a.extent(1); ++j) {
+  for (size_t i = 0; i < a.extent(0); ++i) {
+    for (size_t j = 0; j < a.extent(1); ++j) {
 #if MDSPAN_USE_BRACKET_OPERATOR
       result += a[i, j] * b[i, j];
 #else
@@ -79,8 +79,8 @@ void fill_in_order(
 ) // requires ExtsA::rank() == 2
 {
   T count = 0;
-  for(int i = 0; i < a.extent(0); ++i) {
-    for(int j = 0; j < a.extent(1); ++j) {
+  for(size_t i = 0; i < a.extent(0); ++i) {
+    for (size_t j = 0; j < a.extent(1); ++j) {
 #if MDSPAN_USE_BRACKET_OPERATOR
       a[i, j] = count++;
 #else
