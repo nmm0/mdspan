@@ -46,7 +46,9 @@ jobs:
     steps:
     - name: Install gtest manually
       run: |
-        apt-get install libgtest-dev && cd /usr/src/gtest && cmake CMakeLists.txt && make && cp lib/*.a /usr/lib && ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
+        apt update -y
+        apt install -y cmake
+        apt install -y libgtest-dev && cd /usr/src/gtest && cmake CMakeLists.txt && make && cp lib/*.a /usr/lib && ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
         apt install libbenchmark1 libbenchmark-dev
 
     - name: Create Build Environment
