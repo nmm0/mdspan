@@ -23,6 +23,7 @@
 #include "../__p0009_bits/layout_left.hpp"
 #include "../__p0009_bits/layout_right.hpp"
 #include "../__p0009_bits/layout_stride.hpp"
+#include "../__p0009_bits/device_support.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
@@ -205,7 +206,7 @@ private:
 
 public:
 #if !MDSPAN_HAS_CXX_20 || defined(__NVCC__)
-  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  MDSPAN_INLINE_FUNCTION
   constexpr mapping()
       : mapping(extents_type{})
   {}
@@ -365,7 +366,7 @@ public:
       return {1};
     } else {
       index_type value = 1;
-      std::array<index_type, extents_type::rank()> s{};
+      index_type s[extents_type::rank()];
       s[extent_to_pad_idx] = value;
       value *= padded_stride.value(0);
       for (rank_type r = extent_to_pad_idx + 1; r < extents_type::rank() - 1;
@@ -374,7 +375,7 @@ public:
         value *= exts.extent(r);
       }
       s[extents_type::rank() - 1] = value;
-      return s;
+      return MDSPAN_IMPL_STANDARD_NAMESPACE::detail::c_array_to_std(s);
     }
   }
 
@@ -568,7 +569,7 @@ public:
 
 public:
 #if !MDSPAN_HAS_CXX_20 || defined(__NVCC__)
-  MDSPAN_INLINE_FUNCTION_DEFAULTED
+  MDSPAN_INLINE_FUNCTION
       constexpr mapping()
       : mapping(extents_type{})
   {}
@@ -725,7 +726,7 @@ public:
       return {1};
     } else {
       index_type value = 1;
-      std::array<index_type, extents_type::rank()> s{};
+      index_type s[extents_type::rank()];
       s[extent_to_pad_idx] = value;
       value *= padded_stride.value(0);
       for (rank_type r = extent_to_pad_idx - 1; r > 0; --r) {
@@ -733,7 +734,7 @@ public:
         value *= exts.extent(r);
       }
       s[0] = value;
-      return s;
+      return MDSPAN_IMPL_STANDARD_NAMESPACE::detail::c_array_to_std(s);
     }
   }
 

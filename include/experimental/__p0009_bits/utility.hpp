@@ -64,6 +64,10 @@ constexpr struct
   }
 } stride;
 
+template<class T>
+MDSPAN_INLINE_FUNCTION
+constexpr void maybe_unused_variable(const T&) {}
+
 } // namespace detail
 
 constexpr struct mdspan_non_standard_tag {
