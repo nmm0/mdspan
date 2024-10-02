@@ -197,17 +197,8 @@ struct layout_stride {
       }
 
       template<class IntegralType>
-      MDSPAN_INLINE_FUNCTION
       static constexpr const __strides_storage_t fill_strides(const std::array<IntegralType,extents_type::rank()>& s) {
-        // avoid warning for use of host std::array operator[]
-  #if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP)
-        const IntegralType* s_ptr = reinterpret_cast<const IntegralType*>(&s);
-        // for rank == 0 the expansion is empty and s_ptr becomes unused
-        detail::maybe_unused_variable(s_ptr);
-        return __strides_storage_t{static_cast<index_type>(s_ptr[Idxs])...};
-  #else
         return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
-  #endif
       }
 
       MDSPAN_TEMPLATE_REQUIRES(
@@ -309,7 +300,6 @@ struct layout_stride {
         _MDSPAN_TRAIT(std::is_nothrow_constructible, typename Extents::index_type, const std::remove_const_t<IntegralTypes>&)
       )
     )
-    MDSPAN_FUNCTION
     constexpr
     mapping(
       extents_type const& e,
