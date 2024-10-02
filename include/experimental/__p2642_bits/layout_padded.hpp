@@ -23,7 +23,7 @@
 #include "../__p0009_bits/layout_left.hpp"
 #include "../__p0009_bits/layout_right.hpp"
 #include "../__p0009_bits/layout_stride.hpp"
-#include "../__p0009_bits/device_support.hpp"
+#include "../__p0009_bits/utility.hpp"
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace MDSPAN_IMPL_PROPOSED_NAMESPACE {
