@@ -114,17 +114,6 @@ struct tuple_idx_matcher {
   }
 };
 
-template<class SearchT, size_t Idx, class T>
-struct tuple_type_matcher {
-  using type = tuple_member<T, Idx>;
-  template<class Other>
-  MDSPAN_FUNCTION
-  constexpr auto operator + (Other v) const {
-    if constexpr (std::is_same_v<T, SearchT>) { return *this; }
-    else { return v; }
-  }
-};
-
 template<class IdxSeq, class ... Elements>
 struct tuple_impl;
 
@@ -133,19 +122,6 @@ struct tuple_impl<std::index_sequence<Idx...>, Elements...>: public tuple_member
 
   MDSPAN_FUNCTION
   constexpr tuple_impl(Elements ... vals):tuple_member<Elements, Idx>{vals}... {}
-
-  template<class T>
-  MDSPAN_FUNCTION
-  constexpr T& get() {
-    using base_t = decltype((tuple_type_matcher<T, Idx, Elements>() + ...) );
-    return base_t::type::get();
-  }
-  template<class T>
-  MDSPAN_FUNCTION
-  constexpr const T& get() const {
-    using base_t = decltype((tuple_type_matcher<T, Idx, Elements>() + ...) );
-    return base_t::type::get();
-  }
 
   template<size_t N>
   MDSPAN_FUNCTION
@@ -161,19 +137,14 @@ struct tuple_impl<std::index_sequence<Idx...>, Elements...>: public tuple_member
   }
 };
 
+// A simple tuple-like class for representing slices internally and is compatible with device code
+// This doesn't support type access since we don't need it
+// This is not meant as an external API
 template<class ... Elements>
 struct tuple: public tuple_impl<decltype(std::make_index_sequence<sizeof...(Elements)>()), Elements...> {
   MDSPAN_FUNCTION
   constexpr tuple(Elements ... vals):tuple_impl<decltype(std::make_index_sequence<sizeof...(Elements)>()), Elements ...>(vals ...) {}
 };
-
-template<class T, class ... Args>
-MDSPAN_FUNCTION
-constexpr auto& get(tuple<Args...>& vals) { return vals.template get<T>(); }
-
-template<class T, class ... Args>
-MDSPAN_FUNCTION
-constexpr const T& get(const tuple<Args...>& vals) { return vals.template get<T>(); }
 
 template<size_t Idx, class ... Args>
 MDSPAN_FUNCTION
