@@ -202,12 +202,12 @@ struct layout_stride {
         // avoid warning for use of host std::array operator[]
   #if defined(_MDSPAN_HAS_CUDA) || defined(_MDSPAN_HAS_HIP)
         const IntegralType* s_ptr = reinterpret_cast<const IntegralType*>(&s);
-  #else
-        const IntegralType *s_ptr = s.data();
-  #endif
         // for rank == 0 the expansion is empty and s_ptr becomes unused
         detail::maybe_unused_variable(s_ptr);
         return __strides_storage_t{static_cast<index_type>(s_ptr[Idxs])...};
+  #else
+        return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
+  #endif
       }
 
       MDSPAN_TEMPLATE_REQUIRES(
