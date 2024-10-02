@@ -302,6 +302,12 @@ struct StaticExtentFromRange<std::integral_constant<Integral0, val0>,
   constexpr static size_t value = val1 - val0;
 };
 
+template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
+struct StaticExtentFromRange<integral_constant<Integral0, val0>,
+                             integral_constant<Integral1, val1>> {
+  constexpr static size_t value = val1 - val0;
+};
+
 // compute new static extent from strided_slice, preserving static
 // knowledge
 template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
@@ -311,6 +317,12 @@ template <class Arg0, class Arg1> struct StaticExtentFromStridedRange {
 template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
 struct StaticExtentFromStridedRange<std::integral_constant<Integral0, val0>,
                                     std::integral_constant<Integral1, val1>> {
+  constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
+};
+
+template <class Integral0, Integral0 val0, class Integral1, Integral1 val1>
+struct StaticExtentFromStridedRange<integral_constant<Integral0, val0>,
+                                    integral_constant<Integral1, val1>> {
   constexpr static size_t value = val0 > 0 ? 1 + (val0 - 1) / val1 : 0;
 };
 
