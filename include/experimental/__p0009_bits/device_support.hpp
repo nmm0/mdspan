@@ -38,8 +38,8 @@ struct tuple_member {
   using type = T;
   static constexpr size_t idx = Idx;
   T val;
-  MDSPAN_FUNCTION T& get() { return val; }
-  MDSPAN_FUNCTION const T& get() const { return val; }
+  MDSPAN_FUNCTION constexpr T& get() { return val; }
+  MDSPAN_FUNCTION constexpr const T& get() const { return val; }
 };
 
 template<size_t SearchIdx, size_t Idx, class T>
@@ -47,7 +47,7 @@ struct tuple_idx_matcher {
   using type = tuple_member<T, Idx>;
   template<class Other>
   MDSPAN_FUNCTION
-  auto operator + (Other v) const {
+  constexpr auto operator + (Other v) const {
     if constexpr (Idx == SearchIdx) { return *this; }
     else { return v; }
   }
@@ -58,7 +58,7 @@ struct tuple_type_matcher {
   using type = tuple_member<T, Idx>;
   template<class Other>
   MDSPAN_FUNCTION
-  auto operator + (Other v) const {
+  constexpr auto operator + (Other v) const {
     if constexpr (std::is_same_v<T, SearchT>) { return *this; }
     else { return v; }
   }
@@ -71,30 +71,30 @@ template<size_t ... Idx, class ... Elements>
 struct tuple_impl<std::index_sequence<Idx...>, Elements...>: public tuple_member<Elements, Idx> ... {
 
   MDSPAN_FUNCTION
-  tuple_impl(Elements ... vals):tuple_member<Elements, Idx>{vals}... {}
+  constexpr tuple_impl(Elements ... vals):tuple_member<Elements, Idx>{vals}... {}
 
   template<class T>
   MDSPAN_FUNCTION
-  T& get() {
+  constexpr T& get() {
     using base_t = decltype((tuple_type_matcher<T, Idx, Elements>() + ...) );
     return base_t::type::get();
   }
   template<class T>
   MDSPAN_FUNCTION
-  const T& get() const {
+  constexpr const T& get() const {
     using base_t = decltype((tuple_type_matcher<T, Idx, Elements>() + ...) );
     return base_t::type::get();
   }
 
   template<size_t N>
   MDSPAN_FUNCTION
-  auto& get() {
+  constexpr auto& get() {
     using base_t = decltype((tuple_idx_matcher<N, Idx, Elements>() + ...) );
     return base_t::type::get();
   }
   template<size_t N>
   MDSPAN_FUNCTION
-  const auto& get() const {
+  constexpr const auto& get() const {
     using base_t = decltype((tuple_idx_matcher<N, Idx, Elements>() + ...) );
     return base_t::type::get();
   }
@@ -103,34 +103,34 @@ struct tuple_impl<std::index_sequence<Idx...>, Elements...>: public tuple_member
 template<class ... Elements>
 struct tuple: public tuple_impl<decltype(std::make_index_sequence<sizeof...(Elements)>()), Elements...> {
   MDSPAN_FUNCTION
-  tuple(Elements ... vals):tuple_impl<decltype(std::make_index_sequence<sizeof...(Elements)>()), Elements ...>(vals ...) {}
+  constexpr tuple(Elements ... vals):tuple_impl<decltype(std::make_index_sequence<sizeof...(Elements)>()), Elements ...>(vals ...) {}
 };
 
 template<class T, class ... Args>
 MDSPAN_FUNCTION
-auto& get(tuple<Args...>& vals) { return vals.template get<T>(); }
+constexpr auto& get(tuple<Args...>& vals) { return vals.template get<T>(); }
 
 template<class T, class ... Args>
 MDSPAN_FUNCTION
-const T& get(const tuple<Args...>& vals) { return vals.template get<T>(); }
+constexpr const T& get(const tuple<Args...>& vals) { return vals.template get<T>(); }
 
 template<size_t Idx, class ... Args>
 MDSPAN_FUNCTION
-auto& get(tuple<Args...>& vals) { return vals.template get<Idx>(); }
+constexpr auto& get(tuple<Args...>& vals) { return vals.template get<Idx>(); }
 
 template<size_t Idx, class ... Args>
 MDSPAN_FUNCTION
-const auto& get(const tuple<Args...>& vals) { return vals.template get<Idx>(); }
+constexpr const auto& get(const tuple<Args...>& vals) { return vals.template get<Idx>(); }
 
 template<class ... Elements>
 tuple(Elements ...) -> tuple<Elements...>;
 
 template<class T, size_t ... Idx>
-auto c_array_to_std(std::index_sequence<Idx...>, const T(&values)[sizeof...(Idx)]) {
+constexpr auto c_array_to_std(std::index_sequence<Idx...>, const T(&values)[sizeof...(Idx)]) {
   return std::array{values[Idx]...};
 }
 template<class T, size_t N>
-auto c_array_to_std(const T(&values)[N]) {
+constexpr auto c_array_to_std(const T(&values)[N]) {
   return c_array_to_std(std::make_index_sequence<N>(), values);
 }
 }
