@@ -85,14 +85,27 @@ any_slice_out_of_bounds(const extents<IndexType, Exts...> &exts,
 }
 
 // constructs sub strides
+template<class T, size_t N>
+struct sub_strides
+{
+  T values[N];
+};
+
+// Specialization to avoid 0-length arrays
+template<class T>
+struct sub_strides<T, 0>
+{
+  T values[1];
+};
+
 template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>
 MDSPAN_INLINE_FUNCTION constexpr auto construct_sub_strides(
     const SrcMapping &src_mapping, std::index_sequence<InvMapIdxs...>,
     const MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<slice_strides...> &slices_stride_factor) {
   using index_type = typename SrcMapping::index_type;
-  return std::array<typename SrcMapping::index_type, sizeof...(InvMapIdxs)>{
+  return sub_strides<typename SrcMapping::index_type, sizeof...(InvMapIdxs)>{{
       (static_cast<index_type>(src_mapping.stride(InvMapIdxs)) *
-       static_cast<index_type>(get<InvMapIdxs>(slices_stride_factor)))...};
+       static_cast<index_type>(get<InvMapIdxs>(slices_stride_factor)))...}};
 }
 
 template<class SliceSpecifier, class IndexType>
@@ -241,7 +254,7 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
     auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
                                         std::index_sequence<>(), slices...);
     return submdspan_mapping_result<dst_mapping_t> {
-      dst_mapping_t(dst_ext,
+      dst_mapping_t(mdspan_non_standard, dst_ext,
                     detail::construct_sub_strides(
                         *this, inv_map,
 // HIP needs deduction guides to have markups so we need to be explicit
@@ -250,9 +263,9 @@ layout_left::mapping<Extents>::submdspan_mapping_impl(
 // disable it for CUDA altogether
 #if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
                         detail::tuple<decltype(detail::stride_of(slices))...>{
-                            detail::stride_of(slices)...})),
+                            detail::stride_of(slices)...}).values),
 #else
-                        detail::tuple{detail::stride_of(slices)...})),
+                        detail::tuple{detail::stride_of(slices)...}).values),
 #endif
           offset
     };
@@ -319,7 +332,7 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<PaddingValue>::mapping<Extent
                                         std::index_sequence<>(), slices...);
       using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
     return submdspan_mapping_result<dst_mapping_t> {
-      dst_mapping_t(dst_ext,
+      dst_mapping_t(mdspan_non_standard, dst_ext,
                     MDSPAN_IMPL_STANDARD_NAMESPACE::detail::construct_sub_strides(
                         *this, inv_map,
 // HIP needs deduction guides to have markups so we need to be explicit
@@ -328,9 +341,9 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_left_padded<PaddingValue>::mapping<Extent
 // disable it for CUDA alltogether
 #if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
                         MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices))...>{
-                            MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...})),
+                            MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...}).values),
 #else
-                        MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple{MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...})),
+                        MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple{MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...}).values),
 #endif
           offset
     };
@@ -474,7 +487,7 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
     auto inv_map = detail::inv_map_rank(std::integral_constant<size_t, 0>(),
                                         std::index_sequence<>(), slices...);
     return submdspan_mapping_result<dst_mapping_t> {
-      dst_mapping_t(dst_ext,
+      dst_mapping_t(mdspan_non_standard, dst_ext,
                     detail::construct_sub_strides(
                         *this, inv_map,
 // HIP needs deduction guides to have markups so we need to be explicit
@@ -483,9 +496,9 @@ layout_right::mapping<Extents>::submdspan_mapping_impl(
 // disable it for CUDA altogether
 #if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
                         MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(detail::stride_of(slices))...>{
-                            detail::stride_of(slices)...})),
+                            detail::stride_of(slices)...}).values),
 #else
-                        MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple{detail::stride_of(slices)...})),
+                        MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple{detail::stride_of(slices)...}).values),
 #endif
           offset
     };
@@ -544,7 +557,7 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<PaddingValue>::mapping<Exten
                                         std::index_sequence<>(), slices...);
       using dst_mapping_t = typename layout_stride::template mapping<dst_ext_t>;
     return submdspan_mapping_result<dst_mapping_t> {
-      dst_mapping_t(dst_ext,
+      dst_mapping_t(mdspan_non_standard, dst_ext,
                     MDSPAN_IMPL_STANDARD_NAMESPACE::detail::construct_sub_strides(
                         *this, inv_map,
 // HIP needs deduction guides to have markups so we need to be explicit
@@ -553,9 +566,9 @@ MDSPAN_IMPL_PROPOSED_NAMESPACE::layout_right_padded<PaddingValue>::mapping<Exten
 // disable it for CUDA alltogether
 #if defined(_MDSPAN_HAS_HIP) || defined(_MDSPAN_HAS_CUDA)
                         MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices))...>{
-                            MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...})),
+                            MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...}).values),
 #else
-                        MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple{MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...})),
+                        MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple{MDSPAN_IMPL_STANDARD_NAMESPACE::detail::stride_of(slices)...}).values),
 #endif
           offset
     };
@@ -592,7 +605,7 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
                     : this->operator()(detail::first_of(slices)...));
 
   return submdspan_mapping_result<dst_mapping_t> {
-    dst_mapping_t(dst_ext,
+    dst_mapping_t(mdspan_non_standard, dst_ext,
                   detail::construct_sub_strides(
                       *this, inv_map,
 // HIP needs deduction guides to have markups so we need to be explicit
@@ -602,9 +615,9 @@ layout_stride::mapping<Extents>::submdspan_mapping_impl(
     (defined(__NVCC__) &&                                                      \
      (__CUDACC_VER_MAJOR__ * 100 + __CUDACC_VER_MINOR__ * 10) < 1120)
                       MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple<decltype(detail::stride_of(slices))...>(
-                          detail::stride_of(slices)...))),
+                          detail::stride_of(slices)...).values)),
 #else
-                      MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple(detail::stride_of(slices)...))),
+                      MDSPAN_IMPL_STANDARD_NAMESPACE::detail::tuple(detail::stride_of(slices)...)).values),
 #endif
         offset
   };
