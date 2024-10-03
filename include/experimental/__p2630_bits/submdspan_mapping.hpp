@@ -88,14 +88,7 @@ any_slice_out_of_bounds(const extents<IndexType, Exts...> &exts,
 template<class T, size_t N>
 struct sub_strides
 {
-  T values[N];
-};
-
-// Specialization to avoid 0-length arrays
-template<class T>
-struct sub_strides<T, 0>
-{
-  T values[1];
+  T values[N > 0 ? N : 1];
 };
 
 template <class SrcMapping, class... slice_strides, size_t... InvMapIdxs>

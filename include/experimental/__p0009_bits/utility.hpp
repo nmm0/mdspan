@@ -66,11 +66,6 @@ constexpr struct
   }
 } stride;
 
-template<class T>
-MDSPAN_INLINE_FUNCTION
-constexpr void maybe_unused_variable(const T&) {}
-
-
 // same as std::integral_constant but with __host__ __device__ annotations on
 // the implicit conversion function and the call operator
 template <class T, T v>
@@ -78,21 +73,26 @@ struct integral_constant {
   using value_type         = T;
   using type               = integral_constant<T, v>;
 
+  static constexpr T value = v;
+
   MDSPAN_INLINE_FUNCTION_DEFAULTED
   constexpr integral_constant() = default;
-  
-  MDSPAN_INLINE_FUNCTION_DEFAULTED
+ 
+  // These interop functions work, because other than the value_type operator
+  // everything of std::integral_constant works on device (defaulted functions)  
+  MDSPAN_FUNCTION
   constexpr integral_constant(std::integral_constant<T,v>) {};
-
-  static constexpr T value = v;
-  MDSPAN_INLINE_FUNCTION constexpr operator value_type() const noexcept {
-    return value;
-  }
-  MDSPAN_INLINE_FUNCTION constexpr value_type operator()() const noexcept {
-    return value;
-  }
-  MDSPAN_INLINE_FUNCTION constexpr operator std::integral_constant<T,v>() const noexcept {
+  
+  MDSPAN_FUNCTION constexpr operator std::integral_constant<T,v>() const noexcept {
     return std::integral_constant<T,v>{};
+  }
+
+  MDSPAN_FUNCTION constexpr operator value_type() const noexcept {
+    return value;
+  }
+
+  MDSPAN_FUNCTION constexpr value_type operator()() const noexcept {
+    return value;
   }
 };
 
@@ -162,16 +162,6 @@ constexpr const auto& get(const tuple<Args...>& vals) { return vals.template get
 template<class ... Elements>
 tuple(Elements ...) -> tuple<Elements...>;
 #endif
-
-template<class T, size_t ... Idx>
-constexpr auto c_array_to_std(std::index_sequence<Idx...>, const T(&values)[sizeof...(Idx)]) {
-  return std::array<T, sizeof...(Idx)>{values[Idx]...};
-}
-template<class T, size_t N>
-constexpr auto c_array_to_std(const T(&values)[N]) {
-  return c_array_to_std(std::make_index_sequence<N>(), values);
-}
-
 } // namespace detail
 
 constexpr struct mdspan_non_standard_tag {

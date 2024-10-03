@@ -358,7 +358,7 @@ public:
     return exts;
   }
 
-  MDSPAN_INLINE_FUNCTION constexpr std::array<index_type, extents_type::rank()>
+  constexpr std::array<index_type, extents_type::rank()>
   strides() const noexcept {
     if constexpr (extents_type::rank() == 0) {
       return {};
@@ -366,7 +366,7 @@ public:
       return {1};
     } else {
       index_type value = 1;
-      index_type s[extents_type::rank()];
+      std::array<index_type, extents_type::rank()> s{};
       s[extent_to_pad_idx] = value;
       value *= padded_stride.value(0);
       for (rank_type r = extent_to_pad_idx + 1; r < extents_type::rank() - 1;
@@ -375,7 +375,7 @@ public:
         value *= exts.extent(r);
       }
       s[extents_type::rank() - 1] = value;
-      return MDSPAN_IMPL_STANDARD_NAMESPACE::detail::c_array_to_std(s);
+      return s;
     }
   }
 
@@ -718,7 +718,7 @@ public:
     return exts;
   }
 
-  MDSPAN_INLINE_FUNCTION constexpr std::array<index_type, extents_type::rank()>
+  constexpr std::array<index_type, extents_type::rank()>
   strides() const noexcept {
     if constexpr (extents_type::rank() == 0) {
       return {};
@@ -726,7 +726,7 @@ public:
       return {1};
     } else {
       index_type value = 1;
-      index_type s[extents_type::rank()];
+      std::array<index_type, extents_type::rank()> s{};
       s[extent_to_pad_idx] = value;
       value *= padded_stride.value(0);
       for (rank_type r = extent_to_pad_idx - 1; r > 0; --r) {
@@ -734,7 +734,7 @@ public:
         value *= exts.extent(r);
       }
       s[0] = value;
-      return MDSPAN_IMPL_STANDARD_NAMESPACE::detail::c_array_to_std(s);
+      return s;
     }
   }
 
