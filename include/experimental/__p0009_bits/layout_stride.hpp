@@ -203,14 +203,10 @@ struct layout_stride {
 
       MDSPAN_TEMPLATE_REQUIRES(
         class IntegralType,
-        // The is_convertible condition is added to make sfinae valid
-        // the extents_type::rank() > 0 is added to avoid use of non-standard zero length c-array
         (std::is_convertible<IntegralType, typename extents_type::index_type>::value)
       )
       MDSPAN_INLINE_FUNCTION
-      // despite the requirement some compilers still complain about zero length array during parsing
-      // making it length 1 now, but since the thing can't be instantiated due to requirement the actual
-      // instantiation of strides_storage will not fail despite mismatching length
+      // Need to avoid zero length c-array
       static constexpr const __strides_storage_t fill_strides(mdspan_non_standard_tag, const IntegralType (&s)[extents_type::rank()>0?extents_type::rank():1]) {
         return __strides_storage_t{static_cast<index_type>(s[Idxs])...};
       }
@@ -341,9 +337,7 @@ struct layout_stride {
     mapping(
       mdspan_non_standard_tag,
       extents_type const& e,
-      // despite the requirement some compilers still complain about zero length array during parsing
-      // making it length 1 now, but since the thing can't be instantiated due to requirement the actual
-      // instantiation of strides_storage will not fail despite mismatching length
+      // Need to avoid zero-length c-array
       const IntegralTypes (&s)[extents_type::rank()>0?extents_type::rank():1]
     ) noexcept
 #if defined(_MDSPAN_USE_ATTRIBUTE_NO_UNIQUE_ADDRESS)
