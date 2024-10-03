@@ -96,6 +96,9 @@ struct integral_constant {
   }
 };
 
+// The tuple implementation only comes in play when using capabilities
+// such as submdspan which require C++17 anyway
+#if MDSPAN_HAS_CXX_17
 template<class T, size_t Idx>
 struct tuple_member {
   using type = T;
@@ -158,10 +161,11 @@ constexpr const auto& get(const tuple<Args...>& vals) { return vals.template get
 
 template<class ... Elements>
 tuple(Elements ...) -> tuple<Elements...>;
+#endif
 
 template<class T, size_t ... Idx>
 constexpr auto c_array_to_std(std::index_sequence<Idx...>, const T(&values)[sizeof...(Idx)]) {
-  return std::array{values[Idx]...};
+  return std::array<T, sizeof...(Idx)>{values[Idx]...};
 }
 template<class T, size_t N>
 constexpr auto c_array_to_std(const T(&values)[N]) {
