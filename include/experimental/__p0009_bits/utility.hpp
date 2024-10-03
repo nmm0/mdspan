@@ -2,6 +2,8 @@
 
 #include <cstddef>
 #include <type_traits>
+#include <array>
+#include <utility>
 
 namespace MDSPAN_IMPL_STANDARD_NAMESPACE {
 namespace detail {
