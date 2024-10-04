@@ -108,12 +108,14 @@ struct tuple_member {
   MDSPAN_FUNCTION constexpr const T& get() const { return val; }
 };
 
+// A helper class which will be used via a fold expression to
+// select the type with the correct Idx in a pack of tuple_member
 template<size_t SearchIdx, size_t Idx, class T>
 struct tuple_idx_matcher {
   using type = tuple_member<T, Idx>;
   template<class Other>
   MDSPAN_FUNCTION
-  constexpr auto operator + (Other v) const {
+  constexpr auto operator | (Other v) const {
     if constexpr (Idx == SearchIdx) { return *this; }
     else { return v; }
   }
@@ -131,13 +133,13 @@ struct tuple_impl<std::index_sequence<Idx...>, Elements...>: public tuple_member
   template<size_t N>
   MDSPAN_FUNCTION
   constexpr auto& get() {
-    using base_t = decltype((tuple_idx_matcher<N, Idx, Elements>() + ...) );
+    using base_t = decltype((tuple_idx_matcher<N, Idx, Elements>() | ...) );
     return base_t::type::get();
   }
   template<size_t N>
   MDSPAN_FUNCTION
   constexpr const auto& get() const {
-    using base_t = decltype((tuple_idx_matcher<N, Idx, Elements>() + ...) );
+    using base_t = decltype((tuple_idx_matcher<N, Idx, Elements>() | ...) );
     return base_t::type::get();
   }
 };
