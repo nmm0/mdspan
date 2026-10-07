@@ -42,6 +42,12 @@ template <class OffsetType, class ExtentType, class StrideType>
 struct is_extent_slice<
     extent_slice<OffsetType, ExtentType, StrideType>> : std::true_type {};
 
+template <class T> struct is_range_slice : std::false_type {};
+
+template<class FirstType, class LastType, class StrideType>
+struct is_range_slice<
+  range_slice<FirstType, LastType, StrideType>> : std::true_type {};
+
 // first_of(slice): getting begin of slice specifier range
 MDSPAN_TEMPLATE_REQUIRES(
   class Integral,
@@ -69,6 +75,13 @@ MDSPAN_INLINE_FUNCTION
 constexpr OffsetType
 first_of(const extent_slice<OffsetType, ExtentType, StrideType> &r) {
   return r.offset;
+}
+
+template <class FirstType, class LastType, class StrideType>
+MDSPAN_INLINE_FUNCTION
+constexpr FirstType
+first_of(const range_slice<FirstType, LastType, StrideType> &r) {
+  return r.first;
 }
 
 // last_of(slice): getting end of slice specifier range
@@ -137,6 +150,15 @@ constexpr OffsetType
 last_of(std::integral_constant<size_t, k>, const Extents &,
         const extent_slice<OffsetType, ExtentType, StrideType> &r) {
   return r.extent;
+}
+
+template <size_t k, class Extents, class FirstType, class LastType,
+          class StrideType>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+last_of(std::integral_constant<size_t, k>, const Extents &,
+        const range_slice<FirstType, LastType, StrideType> &r) {
+  return r.last - r.first;
 }
 
 // get stride of slices

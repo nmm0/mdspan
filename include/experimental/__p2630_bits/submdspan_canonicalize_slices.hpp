@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "experimental/__p2630_bits/constant_wrapper.hpp"
 #include "submdspan_extents.hpp"
 #include <complex>
 
@@ -270,6 +271,64 @@ constexpr bool check_submdspan_slice_mandates(
   return (check_submdspan_slice_mandate<typename Extents::index_type, Extents::static_extent(Idx), Slices>(slices) && ... && true);
 }
 
+
+template<class IndexType, class SpanType, class StrideType>
+struct calculate_extents
+{
+  static constexpr auto value(SpanType span, StrideType stride)
+  {
+    return span != 0 ? 1 + divide<IndexType>(span - 1, stride) : 0;
+  }
+};
+
+template<class IndexType, auto Span, auto Stride>
+struct calculate_extents<IndexType, constant_wrapper<Span>, constant_wrapper<Stride>>
+{
+  static constexpr auto value(constant_wrapper<Span>, constant_wrapper<Stride>)
+  {
+    return cw<Span != 0 ? 1 + divide<IndexType>(Span - 1, Stride) : 0>;
+  }
+};
+
+
+template<class IndexType, class StrideType>
+struct calculate_stride
+{
+  template< class SpanType >
+  static constexpr auto value(SpanType span, StrideType stride)
+  {
+    return span != 0 ? stride : IndexType(1);
+  }
+};
+
+template<class IndexType, auto Stride>
+struct calculate_stride<IndexType, constant_wrapper<Stride>>
+{
+  template< class SpanType >
+  static constexpr auto value(SpanType, constant_wrapper<Stride>)
+  {
+    return cw<Stride>;
+  }
+};
+
+
+
+template<class IndexType, class OffsetType, class SpanType, class StrideType>
+constexpr auto canonical_range_slice(OffsetType offset, SpanType span, StrideType stride)
+{
+  return extent_slice{
+    offset,
+    calculate_extents<IndexType, SpanType, StrideType>::value(span, stride),
+    calculate_stride<IndexType, StrideType>::value(span, stride)
+  };
+}
+
+template<class IndexType, class OffsetType, class SpanType>
+constexpr auto canonical_range_slice(OffsetType offset, SpanType span)
+{
+  return canonical_range_slice<IndexType>(offset, span, cw<IndexType(1)>);
+}
+
 // ============================================================
 // canonical_slice: canonicalize a single slice
 //
@@ -301,6 +360,15 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
       /* .extent = */ extent,
       /* .stride = */ stride
     };
+  }
+  else if constexpr (is_range_slice<Slice>::value) {
+    auto c_first = canonical_index<IndexType>(std::move(s.first));
+    auto c_last = canonical_index<IndexType>(std::move(s.last));
+    return canonical_range_slice<IndexType>(
+      c_first,
+      subtract_ice<IndexType>(c_last, c_first),
+      canonical_index<IndexType>(std::move(s.stride))
+    );
   } else {
     // General pair-like case: structured binding into [first, last)
     auto [s_k0, s_k1] = std::move(s);
@@ -309,14 +377,12 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
     static_assert(std::is_convertible_v<S_k0, IndexType>);
     static_assert(std::is_convertible_v<S_k1, IndexType>);
 
-    auto offset = canonical_index<IndexType>(s_k0);
-    auto extent = subtract_ice<IndexType>(s_k0, s_k1);
-    auto stride = cw<IndexType(1)>;
-    return extent_slice<decltype(offset), decltype(extent), decltype(stride)>{
-      /* .offset = */ offset,
-      /* .extent = */ extent,
-      /* .stride = */ stride
-    };
+    auto c_first = canonical_index<IndexType>(s_k0);
+    auto c_last = canonical_index<IndexType>(s_k1);
+    return canonical_range_slice<IndexType>(
+      c_first,
+      subtract_ice<IndexType>(c_last, c_first)
+    );
   }
 }
 
