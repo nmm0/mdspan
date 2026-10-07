@@ -175,6 +175,13 @@ stride_of(const extent_slice<OffsetType, ExtentType, StrideType> &r) {
   return r.stride;
 }
 
+template <class FirstType, class LastType, class StrideType>
+MDSPAN_INLINE_FUNCTION
+constexpr auto
+stride_of(const range_slice<FirstType, LastType, StrideType> &r) {
+  return r.stride;
+}
+
 // compute new static extent from range, preserving static knowledge
 template <class Arg0, class Arg1> struct StaticExtentFromRange {
   constexpr static size_t value = dynamic_extent;

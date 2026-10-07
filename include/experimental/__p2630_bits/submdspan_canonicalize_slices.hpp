@@ -366,7 +366,7 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
     auto c_last = canonical_index<IndexType>(std::move(s.last));
     return canonical_range_slice<IndexType>(
       c_first,
-      subtract_ice<IndexType>(c_last, c_first),
+      subtract_ice<IndexType>(c_first, c_last),
       canonical_index<IndexType>(std::move(s.stride))
     );
   } else {
@@ -381,7 +381,7 @@ constexpr auto canonical_slice([[maybe_unused]] Slice s)
     auto c_last = canonical_index<IndexType>(s_k1);
     return canonical_range_slice<IndexType>(
       c_first,
-      subtract_ice<IndexType>(c_last, c_first)
+      subtract_ice<IndexType>(c_first, c_last)
     );
   }
 }
